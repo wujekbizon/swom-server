@@ -1,5 +1,4 @@
 import { promises as fs } from 'node:fs'
-import { __dirname, server } from '../server'
 
 // Helper functions
 export async function readJsonFile(filePath: string) {

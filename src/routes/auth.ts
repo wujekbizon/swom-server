@@ -1,16 +1,23 @@
-import { FastifyPluginAsync, FastifyRequest, FastifyReply } from 'fastify'
-import bcrypt from 'bcrypt'
-import { LoginSchema, RegisterSchema, User } from '../types/auth'
-import { readJsonFile, writeJsonFile } from '../helpers/fileArchive'
-import path from 'path'
-import { fileURLToPath } from 'url'
 import 'dotenv/config'
+import bcrypt from 'bcrypt'
+import { FastifyPluginAsync, FastifyRequest, FastifyReply } from 'fastify'
+import { LoginSchema, RegisterSchema } from '../schemas/auth.schema'
+import { readJsonFile, writeJsonFile } from '../helpers/fileArchive'
+import { USERS_FILE } from '../helpers/paths'
+import type { User } from '../types/auth'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-const USERS_FILE = path.join(__dirname, '../../src/data/mock-users.json')
-
+/**
+ * Authentication Routes Plugin
+ * Handles user authentication and registration endpoints
+ */
 const authRoutes: FastifyPluginAsync = async (fastify) => {
+  /**
+   * POST /api/auth/login
+   * Authenticates user and returns JWT token
+   * 
+   * @body {email: string, password: string}
+   * @returns {token: string, user: { id, email, name, role }}
+   */
   fastify.post('/login', {
     schema: {
       body: LoginSchema
@@ -31,12 +38,14 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.code(401).send({ error: 'Invalid credentials' })
       }
 
+      // Generate JWT token with user information
       const token = fastify.jwt.sign({ 
         id: user.id,
         email: user.email,
         role: user.role 
       })
 
+      // Return token and user data (excluding password)
       return {
         token,
         user: {
@@ -51,6 +60,13 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
     }
   })
 
+  /**
+   * POST /api/auth/register
+   * Registers a new user
+   * 
+   * @body {email: string, password: string, name: string, role: 'caregiver' | 'admin'}
+   * @returns {token: string, user: { id, email, name, role }}
+   */
   fastify.post('/register', {
     schema: {
       body: RegisterSchema
@@ -61,10 +77,12 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
     try {
       const data = await readJsonFile(USERS_FILE)
       
+      // Check if email already exists
       if (data.users.some((u: User) => u.email === email)) {
         return reply.code(400).send({ error: 'Email already exists' })
       }
 
+      // Create new user with hashed password
       const hashedPassword = await bcrypt.hash(password, 10)
       const newUser = {
         id: crypto.randomUUID(),
@@ -75,15 +93,18 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
         createdAt: new Date().toISOString()
       }
 
+      // Save user to database
       data.users.push(newUser)
       await writeJsonFile(USERS_FILE, data)
 
+      // Generate JWT token for new user
       const token = fastify.jwt.sign({ 
         id: newUser.id,
         email: newUser.email,
         role: newUser.role 
       })
 
+      // Return token and user data (excluding password)
       return {
         token,
         user: {
@@ -98,6 +119,13 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
     }
   })
 
+  /**
+   * GET /api/auth/me
+   * Returns current authenticated user's information
+   * Requires valid JWT token in Authorization header
+   * 
+   * @returns {user: { id, email, name, role }}
+   */
   fastify.get('/me', {
     onRequest: [fastify.authenticate]
   }, async (request) => {
