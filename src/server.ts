@@ -4,6 +4,8 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import authPlugin from './plugins/auth'
 import authRoutes from './routes/auth'
 import dutiesRoutes from './routes/duties'
+import patientRoutes from './routes/patients'
+import healthCheckRoutes from './routes/health-checks'
 import 'dotenv/config'
 
 const server = Fastify({
@@ -22,6 +24,8 @@ await server.register(authPlugin)
 // Register routes
 await server.register(authRoutes, { prefix: '/api/auth' })
 await server.register(dutiesRoutes, { prefix: '/api/duties' })
+await server.register(patientRoutes, { prefix: '/api/patients' })
+await server.register(healthCheckRoutes, { prefix: '/api/health-checks' })
 
 // Start server
 const start = async () => {

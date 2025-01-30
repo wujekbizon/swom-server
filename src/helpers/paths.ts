@@ -14,4 +14,5 @@ export function getDataFilePath(dataFileName: string): string {
 
 // Common data file paths
 export const USERS_FILE = getDataFilePath('mock-users.json')
-export const DUTIES_FILE = getDataFilePath('mock-duties.json') 
+export const DUTIES_FILE = getDataFilePath('mock-duties.json')
+export const PATIENTS_FILE = getDataFilePath('mock-patients.json') 
