@@ -12,21 +12,26 @@ const MedicationSchema = Type.Object({
   frequency: Type.String()
 })
 
-const MedicalHistorySchema = Type.Object({
-  conditions: Type.Array(Type.String()),
-  allergies: Type.Array(Type.String()),
-  surgeries: Type.Array(SurgerySchema),
-  medications: Type.Array(MedicationSchema)
-})
-
-// Patient Create/Update schema
+// Patient Create schema
 export const CreatePatientSchema = Type.Object({
   firstName: Type.String(),
   lastName: Type.String(),
   age: Type.Number(),
   hasInsurance: Type.Boolean(),
   room: Type.String(),
-  medicalHistory: MedicalHistorySchema
+  medicalHistory: Type.Object({
+    conditions: Type.Array(Type.String()),
+    allergies: Type.Array(Type.String()),
+    surgeries: Type.Array(Type.Object({
+      date: Type.String(),
+      procedure: Type.String()
+    })),
+    medications: Type.Array(Type.Object({
+      name: Type.String(),
+      dosage: Type.String(),
+      frequency: Type.String()
+    }))
+  })
 })
 
 // Patient response schema (includes id)
