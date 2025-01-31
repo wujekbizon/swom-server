@@ -6,6 +6,7 @@ import authRoutes from './routes/auth'
 import dutiesRoutes from './routes/duties'
 import patientRoutes from './routes/patients'
 import healthCheckRoutes from './routes/health-checks'
+import auditLogsRoutes from './routes/auditLogs'
 import 'dotenv/config'
 
 const server = Fastify({
@@ -26,6 +27,7 @@ await server.register(authRoutes, { prefix: '/api/auth' })
 await server.register(dutiesRoutes, { prefix: '/api/duties' })
 await server.register(patientRoutes, { prefix: '/api/patients' })
 await server.register(healthCheckRoutes, { prefix: '/api/health-checks' })
+await server.register(auditLogsRoutes, { prefix: '/api/audit-logs' })
 
 // Start server
 const start = async () => {
